@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Citibank Pocket</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_label_messages_format">Got %1$d messages from database!</string>
+
+    <string-array name="filter_options">
+        <item>Filter:TYPE</item>
+        <item>Filter:DATE</item>
+        <item>Filter:GROUP</item>
+        <item>Filter:CARD</item>
+    </string-array>
+</resources>
