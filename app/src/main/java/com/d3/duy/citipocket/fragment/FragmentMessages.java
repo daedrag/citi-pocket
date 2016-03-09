@@ -6,14 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.d3.duy.citipocket.R;
 import com.d3.duy.citipocket.adapter.MessagesListAdapter;
-import com.d3.duy.citipocket.model.MessageLoader;
+import com.d3.duy.citipocket.core.loader.MessageLoader;
 
 /**
  * Created by daoducduy0511 on 3/3/16.
@@ -100,13 +98,13 @@ public class FragmentMessages extends Fragment implements CustomFragment {
         });
 
         // Setup spinner
-        Spinner spinner = (Spinner) rootView.findViewById(R.id.spinner_messages);
-
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.filter_options, R.layout.spinner_options_item);
-
-        adapter.setDropDownViewResource(R.layout.spinner_options_dropdown_item);
-        spinner.setAdapter(adapter);
+//        Spinner spinner = (Spinner) rootView.findViewById(R.id.spinner_messages);
+//
+//        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+//                R.array.filter_options, R.layout.spinner_options_item);
+//
+//        adapter.setDropDownViewResource(R.layout.spinner_options_dropdown_item);
+//        spinner.setAdapter(adapter);
 
         return rootView;
     }

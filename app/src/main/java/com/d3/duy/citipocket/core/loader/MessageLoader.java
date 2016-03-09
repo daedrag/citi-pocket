@@ -1,10 +1,13 @@
-package com.d3.duy.citipocket.model;
+package com.d3.duy.citipocket.core.loader;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.util.Log;
+
+import com.d3.duy.citipocket.model.MessageContract;
+import com.d3.duy.citipocket.model.MessageHolder;
 
 import java.util.ArrayList;
 import java.util.List;

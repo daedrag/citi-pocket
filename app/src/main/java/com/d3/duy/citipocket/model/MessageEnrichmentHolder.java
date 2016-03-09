@@ -1,18 +1,26 @@
 package com.d3.duy.citipocket.model;
 
+import com.d3.duy.citipocket.model.enums.MessageType;
+
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by daoducduy0511 on 27/2/16.
  */
 public class MessageEnrichmentHolder implements Serializable {
-    private MessageFilter.MessageType type;
-    private String cardInfo;
-    private String amount;
-    private String originator;
-    private String date;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yy");
 
-    public MessageFilter.MessageType getType() {
+    private MessageType type;
+    private String cardInfo;
+    private CurrencyAmount amount;
+    private String originator;
+    private String dateStr;
+    private Date dateObj;
+
+    public MessageType getType() {
         return type;
     }
 
@@ -20,7 +28,7 @@ public class MessageEnrichmentHolder implements Serializable {
         return cardInfo;
     }
 
-    public String getAmount() {
+    public CurrencyAmount getAmount() {
         return amount;
     }
 
@@ -28,24 +36,34 @@ public class MessageEnrichmentHolder implements Serializable {
         return originator;
     }
 
-    public String getDate() {
-        return date;
+    public String getDateStr() {
+        return dateStr;
     }
 
-    public MessageEnrichmentHolder(MessageFilter.MessageType type, String cardInfo, String amount, String originator, String date) {
+    public Date getDateObj() {
+        return dateObj;
+    }
+
+    public MessageEnrichmentHolder(MessageType type, String cardInfo, CurrencyAmount amount, String originator, String date) {
         this.type = type;
         this.cardInfo = cardInfo;
         this.amount = amount;
-        this.originator = originator.trim().replaceAll(" +", " ");;
-        this.date = date;
+        this.originator = originator.trim().replaceAll(" +", " ");
+        this.dateStr = date;
+        try {
+            this.dateObj = DATE_FORMAT.parse(date);
+        } catch (ParseException e) {
+            this.dateObj = new Date();
+        }
     }
 
-    public MessageEnrichmentHolder(MessageFilter.MessageType type) {
+    public MessageEnrichmentHolder(MessageType type) {
         this.type = type;
         this.cardInfo = "";
-        this.amount = "";
+        this.amount = new CurrencyAmount("SGD", 0);
         this.originator = "";
-        this.date = "";
+        this.dateStr = "";
+        this.dateObj = new Date();
     }
 
     @Override
@@ -54,6 +72,6 @@ public class MessageEnrichmentHolder implements Serializable {
                 "Card info: " + cardInfo + ", " +
                 "Amount: " + amount + ", " +
                 "Originator: " + originator + ", " +
-                "Date: " + getDate();
+                "Date: " + getDateStr();
     }
 }

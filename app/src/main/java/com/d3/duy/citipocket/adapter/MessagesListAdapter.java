@@ -15,9 +15,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.d3.duy.citipocket.R;
+import com.d3.duy.citipocket.core.enrich.MessageEnrichment;
 import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
-import com.d3.duy.citipocket.model.MessageFilter;
 import com.d3.duy.citipocket.model.MessageHolder;
+import com.d3.duy.citipocket.model.enums.MessageType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
 
     private Context context = null;
     private static LayoutInflater inflater = null;
-    private Map<MessageFilter.MessageType, Integer> colorMap;
+    private Map<MessageType, Integer> colorMap;
 
     // List values
     private static final List<MessageHolder> messageHolders = new ArrayList<>();
@@ -47,15 +48,18 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         this.colorMap = new HashMap<>();
-        this.colorMap.put(MessageFilter.MessageType.PAYMENT, R.color.colorTypePayment);
-        this.colorMap.put(MessageFilter.MessageType.TRANSFER, R.color.colorTypeTransfer);
-        this.colorMap.put(MessageFilter.MessageType.WITHDRAWAL, R.color.colorTypeWithdrawal);
-        this.colorMap.put(MessageFilter.MessageType.GIRO, R.color.colorTypeGiro);
-        this.colorMap.put(MessageFilter.MessageType.UNKNOWN, R.color.colorTypeUnknown);
+        this.colorMap.put(MessageType.PAYMENT, R.color.colorTypePayment);
+        this.colorMap.put(MessageType.TRANSFER, R.color.colorTypeTransfer);
+        this.colorMap.put(MessageType.WITHDRAWAL, R.color.colorTypeWithdrawal);
+        this.colorMap.put(MessageType.GIRO, R.color.colorTypeGiro);
+        this.colorMap.put(MessageType.DEBIT, R.color.colorTypeDebit);
+        this.colorMap.put(MessageType.REVERSAL, R.color.colorTypeReversal);
+        this.colorMap.put(MessageType.OTP, R.color.colorTypeOTP);
+        this.colorMap.put(MessageType.UNKNOWN, R.color.colorTypeUnknown);
 
         this.messageHolders.addAll(messageHolders);
         for (MessageHolder message: messageHolders) {
-            this.messageEnrichmentHolders.add(MessageFilter.classify(message));
+            this.messageEnrichmentHolders.add(MessageEnrichment.classify(message));
         }
 
         notifyDataSetChanged();
@@ -77,9 +81,13 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
         mType.setTextColor(context.getResources().getColor(this.colorMap.get(mEnrichment.getType())));
 
         mOriginator.setText(mEnrichment.getOriginator());
-        mAmount.setText(mEnrichment.getAmount());
+        mAmount.setText(mEnrichment.getAmount().toString());
         mCard.setText(mEnrichment.getCardInfo());
-        mDate.setText(mEnrichment.getDate());
+        mDate.setText(mEnrichment.getDateStr());
+
+        if (mEnrichment.getType() == MessageType.OTP) {
+            rowView.setBackgroundColor(context.getResources().getColor(R.color.colorOTPBackground));
+        }
 
         rowView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +104,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
 
         for (MessageHolder message: messages) {
             messageHolders.add(message);
-            messageEnrichmentHolders.add(MessageFilter.classify(message));
+            messageEnrichmentHolders.add(MessageEnrichment.classify(message));
         }
 
         notifyDataSetChanged();

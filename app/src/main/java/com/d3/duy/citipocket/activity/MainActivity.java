@@ -13,7 +13,7 @@ import android.widget.Toast;
 import com.d3.duy.citipocket.R;
 import com.d3.duy.citipocket.activity.permission.RequestorCallback;
 import com.d3.duy.citipocket.adapter.SectionsPagerAdapter;
-import com.d3.duy.citipocket.model.MessageLoader;
+import com.d3.duy.citipocket.core.loader.MessageLoader;
 
 public class MainActivity extends PermissionRequestorActivity {
 
