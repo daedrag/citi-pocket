@@ -19,10 +19,10 @@ import com.d3.duy.citipocket.fragment.FragmentMessages;
  */
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-    private final Fragment accountFragment = new FragmentAccount();
-    private final Fragment graphFragment = new FragmentGraph();
-    private final Fragment messagesFragment = new FragmentMessages();
-    private Fragment[] fragments = {
+    private static final Fragment accountFragment = new FragmentAccount();
+    private static final Fragment graphFragment = new FragmentGraph();
+    private static final Fragment messagesFragment = new FragmentMessages();
+    private static Fragment[] fragments = {
             accountFragment,
             graphFragment,
             messagesFragment

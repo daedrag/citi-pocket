@@ -43,8 +43,7 @@ public class FragmentMessages extends Fragment implements CustomFragment {
 
         // load initial batch of data
         if (messagesListAdapter == null) {
-            messagesListAdapter = new MessagesListAdapter(
-                    getContext(), MessageLoader.getInstance().getMessagesInBatch());
+            messagesListAdapter = new MessagesListAdapter(getContext());
         }
 
         // Set ListAdapter for list view
@@ -68,7 +67,8 @@ public class FragmentMessages extends Fragment implements CustomFragment {
 
                     if (MessageLoader.getInstance().isMoreNext()) {
                         MessageLoader.getInstance().moveToNextBatch();
-                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch());
+                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch(),
+                                MessageLoader.getInstance().getEnrichedMessagesInBatch());
 
                         // restore current location
                         listView.setSelectionFromTop(totalItemCount - MessageLoader.BATCH_SIZE - visibleItemCount + 1, 0);
@@ -78,7 +78,8 @@ public class FragmentMessages extends Fragment implements CustomFragment {
 
                     if (MessageLoader.getInstance().isMorePrevious()) {
                         MessageLoader.getInstance().moveToPreviousBatch();
-                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch());
+                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch(),
+                                MessageLoader.getInstance().getEnrichedMessagesInBatch());
 
                         // restore current location
                         listView.setSelectionFromTop(MessageLoader.BATCH_SIZE, 0);

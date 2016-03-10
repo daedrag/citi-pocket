@@ -1,10 +1,12 @@
 package com.d3.duy.citipocket.activity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +16,11 @@ import com.d3.duy.citipocket.R;
 import com.d3.duy.citipocket.activity.permission.RequestorCallback;
 import com.d3.duy.citipocket.adapter.SectionsPagerAdapter;
 import com.d3.duy.citipocket.core.loader.MessageLoader;
+import com.d3.duy.citipocket.core.loader.StatisticsLoader;
+import com.d3.duy.citipocket.fragment.FragmentAccount;
+import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
+
+import java.util.List;
 
 public class MainActivity extends PermissionRequestorActivity {
 
@@ -34,6 +41,7 @@ public class MainActivity extends PermissionRequestorActivity {
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
+
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -48,6 +56,7 @@ public class MainActivity extends PermissionRequestorActivity {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -68,8 +77,8 @@ public class MainActivity extends PermissionRequestorActivity {
         request(PERMISSIONS_REQUEST_READ_SMS, new RequestorCallback() {
             @Override
             public void onSuccess(int permission) {
-                Toast.makeText(MainActivity.this, "Permission READ SMS granted", Toast.LENGTH_LONG).show();
-                MessageLoader.getInstance(getContentResolver()).load(true);
+//                Snackbar.make(MainActivity.this.toolbar, "Permission READ SMS granted", Snackbar.LENGTH_SHORT).show();
+                new LoadMessageTask().execute();
             }
         });
     }
@@ -100,4 +109,70 @@ public class MainActivity extends PermissionRequestorActivity {
         return toolbar;
     }
 
+    private class LoadMessageTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            MessageLoader.getInstance(getContentResolver()).load(true);
+
+            // Move cursor to initial batch
+            MessageLoader.getInstance().moveToNextBatch();
+
+            //
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Log.d(TAG, "Loading sms from database...");
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d(TAG, "Loading sms from database... Done!");
+            Toast.makeText(MainActivity.this, "Loading sms from database finished!", Toast.LENGTH_SHORT).show();
+
+            // Start calculating statistics
+            List<MessageEnrichmentHolder> messages = MessageLoader.getInstance().getEnrichedMessages();
+            new StatisticsTask().execute();
+        }
+    }
+
+    private class StatisticsTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            // 1. classify by date
+            // 2. for each group, classify by type
+            // 3. aggregate all messages with the same type
+            StatisticsLoader.getInstance().load();
+
+            // UGLY CODE: set adapter to Fragment Account
+            // http://stackoverflow.com/questions/5161951/android-only-the-original-thread-that-created-a-view-hierarchy-can-touch-its-vi
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    FragmentAccount fragmentAccount = (FragmentAccount) mSectionsPagerAdapter.getAccountFragment();
+                    fragmentAccount.reloadStatAdapter();
+                }
+            });
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Log.d(TAG, "Calculating statistics...");
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.d(TAG, "Calculating statistics... Done!");
+            Toast.makeText(MainActivity.this, "Calculating statistics finished!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
 }

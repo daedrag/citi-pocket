@@ -2,11 +2,12 @@ package com.d3.duy.citipocket.core.loader;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.util.Log;
 
+import com.d3.duy.citipocket.core.enrich.MessageEnrichment;
 import com.d3.duy.citipocket.model.MessageContract;
+import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
 import com.d3.duy.citipocket.model.MessageHolder;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.List;
 public class MessageLoader {
     private static final String TAG = MessageLoader.class.getSimpleName();
 
-    public static final int BATCH_SIZE = 25;
+    public static final int BATCH_SIZE = 50;
     public static final int BATCH_WINDOW_SIZE = 2;
     public static final int TOTAL_ITEM_IN_WINDOW_SIZE = BATCH_WINDOW_SIZE * BATCH_SIZE;
 
@@ -26,6 +27,7 @@ public class MessageLoader {
     private static ContentResolver ourContentResolver = null;
 
     private List<MessageHolder> messageHolderList = new ArrayList<>();
+    private List<MessageEnrichmentHolder> enrichedMessageHolderList = new ArrayList<>();
     private boolean isLoaded = false;
     private int currentWindow = 1;
     private int currentFromPosition = 0;
@@ -43,11 +45,15 @@ public class MessageLoader {
         return ourInstance;
     }
 
-    private List<MessageHolder> getMessages() {
+    public List<MessageHolder> getMessages() {
         synchronized (this) {
-            if (!isLoaded) load(true);
-
             return messageHolderList;
+        }
+    }
+
+    public List<MessageEnrichmentHolder> getEnrichedMessages() {
+        synchronized (this) {
+            return enrichedMessageHolderList;
         }
     }
 
@@ -131,70 +137,67 @@ public class MessageLoader {
          return getMessages().subList(currentFromPosition, currentToPosition);
     }
 
-    public int getMessagesSize() {
-        return total;
+    public List<MessageEnrichmentHolder> getEnrichedMessagesInBatch() {
+        return getEnrichedMessages().subList(currentFromPosition, currentToPosition);
     }
 
-    private void loadFromDatabaseAsync() {
-        List<MessageHolder> messageHolders = new ArrayList<>();
-        /**
-         *  // Example: Queries the user dictionary and returns results
-         *  mCursor = getContentResolver().query(
-         *        UserDictionary.Words.CONTENT_URI,   // The content URI of the words table, "FROM table_name"
-         *        mProjection,                        // The columns to return for each row, "col,col,col,..."
-         *        mSelectionClause                    // Selection criteria, "WHERE col = value"
-         *        mSelectionArgs,                     // Selection criteria
-         *        mSortOrder);                        // The sort order for the returned rows, "ORDER BY col,col,...
-         */
-        String[] mSelectionArgs = {""};
-        mSelectionArgs[0] = MessageContract.SENDER_ADDRESS;
-        Cursor c= ourContentResolver.query(
-                MessageContract.URI,
-                MessageContract.COLUMNS,
-                MessageContract.SELECTION_SENDER_ADDRESS,
-                mSelectionArgs,
-                null);
-
-        int count = c.getCount();
-        Log.d(TAG, "Querying to database, found " + count + " messages");
-
-        // Read the sms data and store it in the list
-        if(c.moveToFirst()) {
-            for(int i=0; i < c.getCount(); i++) {
-                int id = c.getInt(c.getColumnIndexOrThrow(Telephony.Sms._ID));
-                String number = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)).toString();
-                String body = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.BODY)).toString();
-                String date = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.DATE)).toString();
-
-                messageHolders.add(new MessageHolder(id, number, body, date));
-                c.moveToNext();
-            }
+    public int getMessagesSize() {
+        synchronized (this) {
+            return total;
         }
-        c.close();
-
-        messageHolderList.clear();
-        messageHolderList.addAll(messageHolders);
-        isLoaded = true;
-        total = messageHolderList.size();
     }
 
     public void load(boolean forceReload) {
-        // prevent reload many times
-        if (!forceReload && isLoaded) return;
+        synchronized (this) {
+            // prevent reload many times
+            if (!forceReload && isLoaded) return;
 
-        Log.d(TAG, "ForceReload=" + forceReload + ", isLoaded=" + isLoaded);
-        new LoadMessageTask().execute();
-    }
+            List<MessageHolder> messageHolders = new ArrayList<>();
+            /**
+             *  // Example: Queries the user dictionary and returns results
+             *  mCursor = getContentResolver().query(
+             *        UserDictionary.Words.CONTENT_URI,   // The content URI of the words table, "FROM table_name"
+             *        mProjection,                        // The columns to return for each row, "col,col,col,..."
+             *        mSelectionClause                    // Selection criteria, "WHERE col = value"
+             *        mSelectionArgs,                     // Selection criteria
+             *        mSortOrder);                        // The sort order for the returned rows, "ORDER BY col,col,...
+             */
+            String[] mSelectionArgs = {""};
+            mSelectionArgs[0] = MessageContract.SENDER_ADDRESS;
+            Cursor c = ourContentResolver.query(
+                    MessageContract.URI,
+                    MessageContract.COLUMNS,
+                    MessageContract.SELECTION_SENDER_ADDRESS,
+                    mSelectionArgs,
+                    null);
 
-    private class LoadMessageTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            MessageLoader.getInstance().loadFromDatabaseAsync();
+            int count = c.getCount();
+            Log.d(TAG, "Querying to database, found " + count + " messages");
 
-            // Move cursor to initial batch
-            MessageLoader.getInstance().moveToNextBatch();
-            return null;
+            // Read the sms data and store it in the list
+            if (c.moveToFirst()) {
+                for (int i = 0; i < c.getCount(); i++) {
+                    int id = c.getInt(c.getColumnIndexOrThrow(Telephony.Sms._ID));
+                    String number = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)).toString();
+                    String body = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.BODY)).toString();
+                    String date = c.getString(c.getColumnIndexOrThrow(Telephony.Sms.DATE)).toString();
+
+                    messageHolders.add(new MessageHolder(id, number, body, date));
+                    c.moveToNext();
+                }
+            }
+            c.close();
+
+            messageHolderList.clear();
+            messageHolderList.addAll(messageHolders);
+            isLoaded = true;
+            total = messageHolderList.size();
+
+            // transform all normal messages to enriched type
+            for (MessageHolder message: messageHolderList) {
+                enrichedMessageHolderList.add(MessageEnrichment.classify(message));
+            }
         }
-
     }
+
 }

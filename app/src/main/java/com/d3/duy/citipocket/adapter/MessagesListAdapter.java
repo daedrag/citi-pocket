@@ -15,12 +15,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.d3.duy.citipocket.R;
-import com.d3.duy.citipocket.core.enrich.MessageEnrichment;
+import com.d3.duy.citipocket.core.loader.MessageLoader;
 import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
 import com.d3.duy.citipocket.model.MessageHolder;
 import com.d3.duy.citipocket.model.enums.MessageType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,34 +34,47 @@ import java.util.Map;
  */
 public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
 
-    private Context context = null;
     private static LayoutInflater inflater = null;
-    private Map<MessageType, Integer> colorMap;
+    private static final Map<MessageType, Integer> colorMap;
+    static {
+        Map<MessageType, Integer> aColorMap = new HashMap<>();
+        aColorMap.put(MessageType.PAYMENT, R.color.colorTypePayment);
+        aColorMap.put(MessageType.TRANSFER, R.color.colorTypeTransfer);
+        aColorMap.put(MessageType.WITHDRAWAL, R.color.colorTypeWithdrawal);
+        aColorMap.put(MessageType.GIRO, R.color.colorTypeGiro);
+        aColorMap.put(MessageType.DEBIT, R.color.colorTypeDebit);
+        aColorMap.put(MessageType.REVERSAL, R.color.colorTypeReversal);
+        aColorMap.put(MessageType.OTP, R.color.colorTypeOTP);
+        aColorMap.put(MessageType.UNKNOWN, R.color.colorTypeUnknown);
+
+        // handle other cases if any
+        for (MessageType type: MessageType.values()) {
+            if (!aColorMap.containsKey(type))
+                aColorMap.put(type, R.color.colorTypeUnknown);
+        }
+
+        colorMap = Collections.unmodifiableMap(aColorMap);
+    }
 
     // List values
     private static final List<MessageHolder> messageHolders = new ArrayList<>();
     private static final List<MessageEnrichmentHolder> messageEnrichmentHolders = new ArrayList<>();
 
-    public MessagesListAdapter(Context context, List<MessageHolder> messageHolders) {
-        super(context, R.layout.list_message, messageEnrichmentHolders);
+    private Context context = null;
+    private static final int LAYOUT_ID = R.layout.list_message;
+
+    public MessagesListAdapter(Context context) {
+        super(context, LAYOUT_ID, messageEnrichmentHolders);
 
         this.context = context;
+
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        this.colorMap = new HashMap<>();
-        this.colorMap.put(MessageType.PAYMENT, R.color.colorTypePayment);
-        this.colorMap.put(MessageType.TRANSFER, R.color.colorTypeTransfer);
-        this.colorMap.put(MessageType.WITHDRAWAL, R.color.colorTypeWithdrawal);
-        this.colorMap.put(MessageType.GIRO, R.color.colorTypeGiro);
-        this.colorMap.put(MessageType.DEBIT, R.color.colorTypeDebit);
-        this.colorMap.put(MessageType.REVERSAL, R.color.colorTypeReversal);
-        this.colorMap.put(MessageType.OTP, R.color.colorTypeOTP);
-        this.colorMap.put(MessageType.UNKNOWN, R.color.colorTypeUnknown);
+        List<MessageHolder> loadedMessages = MessageLoader.getInstance().getMessagesInBatch();
+        List<MessageEnrichmentHolder> loadedEnrichedMessages = MessageLoader.getInstance().getEnrichedMessagesInBatch();
 
-        this.messageHolders.addAll(messageHolders);
-        for (MessageHolder message: messageHolders) {
-            this.messageEnrichmentHolders.add(MessageEnrichment.classify(message));
-        }
+        messageHolders.addAll(loadedMessages);
+        messageEnrichmentHolders.addAll(loadedEnrichedMessages);
 
         notifyDataSetChanged();
     }
@@ -69,7 +83,7 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
     public View getView(final int position, View convertView, ViewGroup parent) {
 
         final MessageEnrichmentHolder mEnrichment = messageEnrichmentHolders.get(position);
-        View rowView = inflater.inflate(R.layout.list_message, null);
+        View rowView = inflater.inflate(LAYOUT_ID, null);
 
         TextView mType = (TextView) rowView.findViewById(R.id.row_message_type);
         TextView mOriginator = (TextView) rowView.findViewById(R.id.row_message_originator);
@@ -78,13 +92,14 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
         TextView mDate = (TextView) rowView.findViewById(R.id.row_message_date);
 
         mType.setText(mEnrichment.getType().name());
-        mType.setTextColor(context.getResources().getColor(this.colorMap.get(mEnrichment.getType())));
+        mType.setTextColor(context.getResources().getColor(colorMap.get(mEnrichment.getType())));
 
         mOriginator.setText(mEnrichment.getOriginator());
         mAmount.setText(mEnrichment.getAmount().toString());
         mCard.setText(mEnrichment.getCardInfo());
         mDate.setText(mEnrichment.getDateStr());
 
+        // since OTP is not important, put a grey background to indicate that
         if (mEnrichment.getType() == MessageType.OTP) {
             rowView.setBackgroundColor(context.getResources().getColor(R.color.colorOTPBackground));
         }
@@ -98,13 +113,14 @@ public class MessagesListAdapter extends ArrayAdapter<MessageEnrichmentHolder> {
         return rowView;
     }
 
-    public void setData(List<MessageHolder> messages) {
+    public void setData(List<MessageHolder> messages, List<MessageEnrichmentHolder> enrichedMessages) {
         messageHolders.clear();
         messageEnrichmentHolders.clear();
 
-        for (MessageHolder message: messages) {
-            messageHolders.add(message);
-            messageEnrichmentHolders.add(MessageEnrichment.classify(message));
+        int size = messages.size();
+        for (int i = 0; i < size; i++) {
+            messageHolders.add(messages.get(i));
+            messageEnrichmentHolders.add(enrichedMessages.get(i));
         }
 
         notifyDataSetChanged();
