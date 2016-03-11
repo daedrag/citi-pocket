@@ -8,8 +8,22 @@ import com.d3.duy.citipocket.model.CurrencyAmount;
 public class CurrencyEnrichment {
 
     public static CurrencyAmount fromCurrencyAmountString(String s) {
-        String ccyCode = s.substring(0, 3); // assume the first 3 chars contain currency code
-        double amount = Double.parseDouble(s.substring(3));
+        // default case
+        String ccyCode = 'SGD';
+        double amount = 0.0;
+        
+        // assume the first 3 chars contain currency code
+        if (s.length() >= 4) {
+            if (s.charAt(0) == '-') {
+                // negative amount
+                ccyCode = s.substring(1, 4); 
+                amount = (-1) * Double.parseDouble(s.substring(4));  // negative amount
+            } else {
+                ccyCode = s.substring(0, 3);
+                amount = Double.parseDouble(s.substring(3));    
+            }
+        }
+        
         return new CurrencyAmount(ccyCode, amount);
     }
 
