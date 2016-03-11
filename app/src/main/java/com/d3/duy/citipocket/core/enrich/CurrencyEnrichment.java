@@ -29,6 +29,9 @@ public class CurrencyEnrichment {
     public static CurrencyAmount convertToSgd(CurrencyAmount original) {
         double sgdAmt = 0;
         switch (original.getCurrencyCode()) {
+            case "SGD":
+                sgdAmt = original.getAmount();
+                break;
             case "USD":
                 sgdAmt = original.getAmount() * SGD_TO_USD;
                 break;
