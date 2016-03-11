@@ -68,12 +68,6 @@ public class MainActivity extends PermissionRequestorActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
         request(PERMISSIONS_REQUEST_READ_SMS, new RequestorCallback() {
             @Override
             public void onSuccess(int permission) {

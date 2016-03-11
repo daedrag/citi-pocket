@@ -32,4 +32,8 @@ public class CurrencyAmount {
     public String toString() {
         return (amount < 0 ? "-" : "") + currencyCode + Math.abs(amount);
     }
+
+    public String toStringWith2Digit() {
+        return (amount < 0 ? "-" : "") + currencyCode + String.format("%.2f", Math.abs(amount));
+    }
 }

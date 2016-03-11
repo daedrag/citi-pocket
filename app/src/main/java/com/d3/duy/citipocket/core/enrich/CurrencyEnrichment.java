@@ -9,7 +9,7 @@ public class CurrencyEnrichment {
 
     public static CurrencyAmount fromCurrencyAmountString(String s) {
         // default case
-        String ccyCode = 'SGD';
+        String ccyCode = "SGD";
         double amount = 0.0;
         
         // assume the first 3 chars contain currency code

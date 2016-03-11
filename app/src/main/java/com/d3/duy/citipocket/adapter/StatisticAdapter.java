@@ -1,7 +1,6 @@
 package com.d3.duy.citipocket.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +72,7 @@ public class StatisticAdapter extends BaseAdapter {
         TextView countTextView = (TextView) rowView.findViewById(R.id.grid_item_count);
 
         SubtypeStatistics subStat = this.subStats.get(position);
-        totalAmountTextView.setText(subStat.getTotalAmount().toString());
+        totalAmountTextView.setText(subStat.getTotalAmount().toStringWith2Digit());
         typeTextView.setText(subStat.getType().name());
         countTextView.setText(subStat.getCount() + " transactions");
 
@@ -86,7 +85,7 @@ public class StatisticAdapter extends BaseAdapter {
     }
 
     public void loadDataAndNotify() {
-        Log.d(TAG, "Loading statistics adapter for " + this.targetedMonthYear.toString());
+//        Log.d(TAG, "Loading statistics adapter for " + this.targetedMonthYear.toString());
 
         List<MonthlyStatistics> monthlyStatistics = StatisticsLoader.getInstance().getMonthlyStatistics();
         if (monthlyStatistics.size() == 0) return;
@@ -97,11 +96,11 @@ public class StatisticAdapter extends BaseAdapter {
         // find the correct list of sub statistics
         this.subStats.clear();
         for (MonthlyStatistics stat : this.stats) {
-            Log.d(TAG, "Current month year: " + stat.getMonth() + " " + stat.getYear());
+//            Log.d(TAG, "Current month year: " + stat.getMonth() + " " + stat.getYear());
             if (stat.getMonth() == this.targetedMonthYear.getMonth() &&
                     stat.getYear() == this.targetedMonthYear.getYear()) {
 
-                Log.d(TAG, "Found sub statistics!");
+//                Log.d(TAG, "Found sub statistics!");
 
                 List<SubtypeStatistics> subStats = stat.getSubStatList();
                 this.subStats.addAll(subStats);
