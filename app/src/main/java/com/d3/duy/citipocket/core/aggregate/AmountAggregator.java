@@ -13,7 +13,7 @@ public class AmountAggregator {
 
     public static CurrencyAmount aggregate(List<MessageEnrichmentHolder> messages) {
         double totalAmount = 0;
-        String baseCcy = "USD";
+        String baseCcy = "SGD";
 
         for (MessageEnrichmentHolder message : messages) {
             if (baseCcy.equals(message.getAmount().getCurrencyCode())) {
