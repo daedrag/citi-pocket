@@ -11,7 +11,8 @@ import android.widget.TextView;
 
 import com.d3.duy.citipocket.R;
 import com.d3.duy.citipocket.adapter.MessagesListAdapter;
-import com.d3.duy.citipocket.core.loader.MessageLoader;
+import com.d3.duy.citipocket.core.store.MessageStore;
+import com.d3.duy.citipocket.model.MessageContract;
 
 /**
  * Created by daoducduy0511 on 3/3/16.
@@ -19,7 +20,9 @@ import com.d3.duy.citipocket.core.loader.MessageLoader;
 public class FragmentMessages extends Fragment implements CustomFragment {
 
     private static final String TITLE = "Messages";
-    private static MessagesListAdapter messagesListAdapter = null;
+    private MessagesListAdapter messagesListAdapter = null;
+    private ListView listView;
+    private TextView textView;
 
     public FragmentMessages() {
         super();
@@ -35,20 +38,8 @@ public class FragmentMessages extends Fragment implements CustomFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_messages, container, false);
 
-        TextView textView = (TextView) rootView.findViewById(R.id.section_label_messages);
-        textView.setText(String.format(
-                getString(R.string.section_label_messages_format),
-                MessageLoader.getInstance().getMessagesSize()
-        ));
-
-        // load initial batch of data
-        if (messagesListAdapter == null) {
-            messagesListAdapter = new MessagesListAdapter(getContext());
-        }
-
-        // Set ListAdapter for list view
-        final ListView listView = (ListView) rootView.findViewById(R.id.list_messages);
-        listView.setAdapter(messagesListAdapter);
+        textView = (TextView) rootView.findViewById(R.id.section_label_messages);
+        listView = (ListView) rootView.findViewById(R.id.list_messages);
 
         // Set scroll behavior to load more next/previous batch
         // considering predefined window size
@@ -60,29 +51,31 @@ public class FragmentMessages extends Fragment implements CustomFragment {
 
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (messagesListAdapter == null) return;
+
                 if (!isMoving) return;
 
                 if (firstVisibleItem + visibleItemCount == totalItemCount && totalItemCount != 0
                         && scrollState == SCROLL_STATE_IDLE) {
 
-                    if (MessageLoader.getInstance().isMoreNext()) {
-                        MessageLoader.getInstance().moveToNextBatch();
-                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch(),
-                                MessageLoader.getInstance().getEnrichedMessagesInBatch());
+                    if (MessageStore.getInstance().isMoreNext()) {
+                        MessageStore.getInstance().moveToNextBatch();
+                        messagesListAdapter.setData(MessageStore.getInstance().getEnrichedMessagesInBatch());
+                        messagesListAdapter.notifyDataSetChanged();
 
                         // restore current location
-                        listView.setSelectionFromTop(totalItemCount - MessageLoader.BATCH_SIZE - visibleItemCount + 1, 0);
+                        listView.setSelectionFromTop(totalItemCount - MessageStore.BATCH_SIZE - visibleItemCount + 1, 0);
                     }
                 } else if (firstVisibleItem == 0 && totalItemCount != 0
                         && scrollState == SCROLL_STATE_IDLE) {
 
-                    if (MessageLoader.getInstance().isMorePrevious()) {
-                        MessageLoader.getInstance().moveToPreviousBatch();
-                        messagesListAdapter.setData(MessageLoader.getInstance().getMessagesInBatch(),
-                                MessageLoader.getInstance().getEnrichedMessagesInBatch());
+                    if (MessageStore.getInstance().isMorePrevious()) {
+                        MessageStore.getInstance().moveToPreviousBatch();
+                        messagesListAdapter.setData(MessageStore.getInstance().getEnrichedMessagesInBatch());
+                        messagesListAdapter.notifyDataSetChanged();
 
                         // restore current location
-                        listView.setSelectionFromTop(MessageLoader.BATCH_SIZE, 0);
+                        listView.setSelectionFromTop(MessageStore.BATCH_SIZE, 0);
                     }
                 }
 
@@ -91,6 +84,8 @@ public class FragmentMessages extends Fragment implements CustomFragment {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (messagesListAdapter == null) return;
+
                 this.firstVisibleItem = firstVisibleItem;
                 this.visibleItemCount = visibleItemCount;
                 this.totalItemCount = totalItemCount;
@@ -110,4 +105,18 @@ public class FragmentMessages extends Fragment implements CustomFragment {
         return rootView;
     }
 
+    public void initAdapter() {
+        // load initial batch of data
+        if (messagesListAdapter == null) {
+            messagesListAdapter = new MessagesListAdapter(getContext());
+            listView.setAdapter(messagesListAdapter);
+        }
+
+        textView.setText(String.format(
+                getString(R.string.section_label_messages_format),
+                MessageStore.getInstance().getMessagesSize(),
+                MessageContract.SENDER_ADDRESS));
+
+        messagesListAdapter.notifyDataSetChanged();
+    }
 }

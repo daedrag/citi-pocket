@@ -1,9 +1,13 @@
 package com.d3.duy.citipocket.model;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by daoducduy0511 on 3/10/16.
  */
 public class CurrencyAmount {
+    private static final DecimalFormat DECIMAL_FORMAT_ACCOUNTING_STYLE = new DecimalFormat("#,###");
+
     private String currencyCode;
     private double amount;
 
@@ -30,10 +34,30 @@ public class CurrencyAmount {
 
     @Override
     public String toString() {
-        return (amount < 0 ? "-" : "") + currencyCode + Math.abs(amount);
+        return getFullAmountWith2Digit();
     }
 
-    public String toStringWith2Digit() {
+    public String getFullAmountWith2Digit() {
         return (amount < 0 ? "-" : "") + currencyCode + String.format("%.2f", Math.abs(amount));
+    }
+
+    public String getFullAmountWithAccountingStyle() {
+        if (amount < 0) {
+            return "(" + currencyCode + " " + DECIMAL_FORMAT_ACCOUNTING_STYLE.format(Math.abs(amount)) + ")";
+        } else {
+            return currencyCode + " " + DECIMAL_FORMAT_ACCOUNTING_STYLE.format(amount);
+        }
+    }
+
+    public String getAmountWith2Digit() {
+        return String.format("%.2f", amount);
+    }
+
+    public String getAmountWithAccountingStyle() {
+        if (amount < 0) {
+            return "(" + DECIMAL_FORMAT_ACCOUNTING_STYLE.format(Math.abs(amount)) + ")";
+        } else {
+            return DECIMAL_FORMAT_ACCOUNTING_STYLE.format(amount);
+        }
     }
 }

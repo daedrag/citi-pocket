@@ -7,22 +7,73 @@
     android:orientation="vertical"
     tools:context=".activity.MainActivity$PlaceholderFragment">
 
-    <TextView
-        android:id="@+id/label_this_month"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        android:text="CURRENT MONTH"/>
+        android:orientation="horizontal"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp">
+        <ImageButton
+            android:id="@+id/btn_previous_month"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_arrow_left"
+            android:scaleType="centerInside"
+            android:layout_marginTop="8dp"
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:layout_gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/label_balance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Balance"
+                    android:textColor="@color/colorPrimary"
+                    android:textAlignment="center"
+                    android:textSize="20dp"/>
+
+                <TextView
+                    android:id="@+id/label_this_month"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Current month"
+                    android:textAlignment="center"
+                    android:textSize="12dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_next_month"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top"
+            android:background="?android:attr/selectableItemBackground"
+            android:src="@drawable/ic_arrow_right"
+            android:scaleType="centerInside"
+            android:layout_marginTop="8dp"
+            />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:layout_marginBottom="16dp">
+        android:layout_marginTop="16dp">
 
         <GridView
             android:id="@+id/grid_this_month"
@@ -34,8 +85,6 @@
             android:layout_height="match_parent"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
             />
 
     </ScrollView>

@@ -1,12 +1,10 @@
-package com.d3.duy.citipocket.core.loader;
+package com.d3.duy.citipocket.core.store;
 
 import android.util.Log;
 
-import com.d3.duy.citipocket.core.aggregate.AmountAggregator;
 import com.d3.duy.citipocket.core.group.IMessageGroup;
 import com.d3.duy.citipocket.core.group.MessageGroupByMonth;
 import com.d3.duy.citipocket.core.group.MessageGroupByType;
-import com.d3.duy.citipocket.model.CurrencyAmount;
 import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
 import com.d3.duy.citipocket.model.MonthYear;
 import com.d3.duy.citipocket.model.MonthlyStatistics;
@@ -21,12 +19,12 @@ import java.util.Map;
 /**
  * Created by daoducduy0511 on 3/11/16.
  */
-public class StatisticsLoader {
-    private static final String TAG = StatisticsLoader.class.getSimpleName();
+public class StatisticsStore {
+    private static final String TAG = StatisticsStore.class.getSimpleName();
 
-    private static StatisticsLoader ourInstance = new StatisticsLoader();
+    private static StatisticsStore ourInstance = new StatisticsStore();
 
-    public static StatisticsLoader getInstance() {
+    public static StatisticsStore getInstance() {
         return ourInstance;
     }
 
@@ -35,7 +33,7 @@ public class StatisticsLoader {
 
     private Map<MonthYear, List<MessageEnrichmentHolder>> mapByMonthYear;
 
-    private StatisticsLoader() {
+    private StatisticsStore() {
         messages = new ArrayList<>();
         monthlyStatisticsList = new ArrayList<>();
         mapByMonthYear = new HashMap<>();
@@ -47,7 +45,7 @@ public class StatisticsLoader {
         // 1. classify by month
         // 2. for each group, classify by type
         // 3. aggregate all messages with the same type
-        messages = MessageLoader.getInstance().getEnrichedMessages();
+        messages = MessageStore.getInstance().getEnrichedMessages();
 
         IMessageGroup<MonthYear> groupByMonth = new MessageGroupByMonth(messages);
         mapByMonthYear = groupByMonth.groupBy();
@@ -69,14 +67,8 @@ public class StatisticsLoader {
 
             // aggregate per type
             for (Map.Entry<MessageType, List<MessageEnrichmentHolder>> typeMapEntry : typeMap.entrySet()) {
-                MessageType currentType = typeMapEntry.getKey();
-                CurrencyAmount ccyAmount = AmountAggregator.aggregate(typeMapEntry.getValue());
-                int count = typeMapEntry.getValue().size();
-
-                Log.d(TAG, "Mapping [" + currentMonthYear + " , " + currentType + " , " + ccyAmount + " , " + count + "]");
-
                 // add to sub stats
-                subStatList.add(new SubtypeStatistics(count, ccyAmount, currentType));
+                subStatList.add(new SubtypeStatistics(typeMapEntry.getKey(), typeMapEntry.getValue()));
             }
 
             MonthlyStatistics statistics = new MonthlyStatistics(currentMonthYear.getMonth(),

@@ -1,5 +1,6 @@
 package com.d3.duy.citipocket.model;
 
+import com.d3.duy.citipocket.core.aggregate.AmountAggregator;
 import com.d3.duy.citipocket.model.enums.MessageType;
 import com.d3.duy.citipocket.model.enums.Month;
 
@@ -12,17 +13,21 @@ import java.util.List;
 public class MonthlyStatistics {
 
     public static class SubtypeStatistics {
-        private int count;
+        private List<MessageEnrichmentHolder> messages;
         private CurrencyAmount totalAmount;
         private MessageType type;
 
-        public SubtypeStatistics(int count, CurrencyAmount totalAmount, MessageType type) {
-            this.count = count;
-            this.totalAmount = totalAmount;
+        public SubtypeStatistics(MessageType type, List<MessageEnrichmentHolder> messages) {
+            this.messages = messages;
+            this.totalAmount = AmountAggregator.aggregate(this.messages);
             this.type = type;
         }
 
-        public int getCount() { return count; }
+        public SubtypeStatistics(List<MessageEnrichmentHolder> messages) {
+            this(messages.get(0).getType(), messages);
+        }
+
+        public int getCount() { return messages.size(); }
         public CurrencyAmount getTotalAmount() { return totalAmount; }
         public MessageType getType() { return type; }
     }

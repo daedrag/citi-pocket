@@ -40,32 +40,33 @@ public class MessageEnrichment {
 
     public static MessageEnrichmentHolder classify(MessageHolder sms) {
         String body = sms.getBody();
+        String date = DATE_FORMAT.format(sms.getTimestamp());
 
         if (body.matches(FILTER_CARD_PAYMENT)) {
-            return parseCashPayment(body);
+            return parseCashPayment(body, date);
 
         } else if (body.matches(FILTER_CASH_WITHDRAWAL)) {
-            return parseCashWithdrawal(body);
+            return parseCashWithdrawal(body, date);
 
         } else if (body.matches(FILTER_GIRO_CREDIT)) {
-            return parseGiroCredit(body);
+            return parseGiroCredit(body, date);
 
         } else if (body.matches(FILTER_TRANSFER_REQUEST)) {
-            return parseTransferRequest(body);
+            return parseTransferRequest(body, date);
 
         } else if (body.matches(FILTER_OTP)) {
-            return parseOTP(body);
+            return parseOTP(body, date);
 
         } else if (body.matches(FILTER_REVERSAL)) {
-            return parseReversal(body);
+            return parseReversal(body, date);
 
         } else if (body.matches(FILTER_DEBIT)) {
-            // special case: no date in message body
-            return parseDebit(body, DATE_FORMAT.format(sms.getTimestamp()));
+            return parseDebit(body, date);
 
         } else {
             // Unknown type by default
-            return new MessageEnrichmentHolder(MessageType.UNKNOWN);
+            // pass timestamp to enhance as no date in message body
+            return new MessageEnrichmentHolder(body, MessageType.UNKNOWN, date);
 
         }
     }
@@ -96,125 +97,125 @@ public class MessageEnrichment {
         return CurrencyEnrichment.fromCurrencyAmountString(amountStr);
     }
 
-    private static MessageEnrichmentHolder parseCashPayment(String messageBody) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseCashPayment(String messageBody, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = messageBody.split(SPLITTER_CARD_PAYMENT);
         if (tokens.length != 5) {
-            return new MessageEnrichmentHolder(MessageType.PAYMENT);
+            return new MessageEnrichmentHolder(messageBody, MessageType.PAYMENT, date);
         } else {
             amount = parseAmount(tokens[1]).negate();   // payment so negative value
             cardInfo = parseCardInfo(tokens[2]);
             originator = tokens[3];
-            date = tokens[4];
+//            date = tokens[4];
 
             // remove last dot
-            if (date.contains(".")) {
-                date = date.substring(0, date.length() - 1);
-            }
+//            if (date.contains(".")) {
+//                date = date.substring(0, date.length() - 1);
+//            }
 
-            return new MessageEnrichmentHolder(MessageType.PAYMENT, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(messageBody, MessageType.PAYMENT, cardInfo, amount, originator, date);
         }
     }
 
-    private static MessageEnrichmentHolder parseCashWithdrawal(String messageBody) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseCashWithdrawal(String messageBody, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = messageBody.split(SPLITTER_CASH_WITHDRAWAL);
         if (tokens.length != 5) {
-            return new MessageEnrichmentHolder(MessageType.WITHDRAWAL);
+            return new MessageEnrichmentHolder(messageBody, MessageType.WITHDRAW, date);
         } else {
             amount = parseAmount(tokens[1]).negate();
             cardInfo = parseCardInfo(tokens[2]);
             originator = tokens[4];
-            date = tokens[3];
+//            date = tokens[3];
 
             // remove last dot
-            if (originator.contains(".")) {
-                originator = originator.substring(0, originator.length() - 1);
-            }
+//            if (originator.contains(".")) {
+//                originator = originator.substring(0, originator.length() - 1);
+//            }
 
-            return new MessageEnrichmentHolder(MessageType.WITHDRAWAL, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(messageBody, MessageType.WITHDRAW, cardInfo, amount, originator, date);
         }
     }
 
-    private static MessageEnrichmentHolder parseGiroCredit(String messageBody) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseGiroCredit(String messageBody, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = messageBody.split(SPLITTER_GIRO_CREDIT);
         if (tokens.length != 6) {
-            return new MessageEnrichmentHolder(MessageType.GIRO);
+            return new MessageEnrichmentHolder(messageBody, MessageType.GIRO, date);
         } else {
             cardInfo = tokens[2];
             amount = parseAmount(tokens[1]);
             originator = tokens[4];
-            date = tokens[3];
+//            date = tokens[3];
 
-            return new MessageEnrichmentHolder(MessageType.GIRO, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(messageBody, MessageType.GIRO, cardInfo, amount, originator, date);
         }
     }
 
-    private static MessageEnrichmentHolder parseTransferRequest(String messageBody) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseTransferRequest(String messageBody, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = messageBody.split(SPLITTER_TRANSFER_REQUEST);
         if (tokens.length != 5) {
-            return new MessageEnrichmentHolder(MessageType.TRANSFER);
+            return new MessageEnrichmentHolder(messageBody, MessageType.TRANSFER, date);
         } else {
             amount = parseAmount(tokens[2]).negate();
             cardInfo = "Main account";
             originator = tokens[3];
-            date = tokens[1];
+//            date = tokens[1];
 
-            return new MessageEnrichmentHolder(MessageType.TRANSFER, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(messageBody, MessageType.TRANSFER, cardInfo, amount, originator, date);
         }
 
     }
 
-    private static MessageEnrichmentHolder parseDebit(String body, String sentDate) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseDebit(String body, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = body.split(SPLITTER_DEBIT);
         if (tokens.length != 4) {
-            return new MessageEnrichmentHolder(MessageType.DEBIT);
+            return new MessageEnrichmentHolder(body, MessageType.DEBIT, date);
         } else {
             amount = parseAmount(tokens[2]).negate();
-            cardInfo = "Account " + tokens[1];
-            originator = "Unknown";
-            date = sentDate;
+            cardInfo = "Main " + tokens[1];
+            originator = "UNKNOWN";
+//            date = sentDate;
 
-            return new MessageEnrichmentHolder(MessageType.DEBIT, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(body, MessageType.DEBIT, cardInfo, amount, originator, date);
         }
     }
 
-    private static MessageEnrichmentHolder parseReversal(String body) {
-        String cardInfo, originator, date;
+    private static MessageEnrichmentHolder parseReversal(String body, String date) {
+        String cardInfo, originator;
         CurrencyAmount amount;
 
         String[] tokens = body.split(SPLITTER_REVERSAL);
         if (tokens.length != 5) {
-            return new MessageEnrichmentHolder(MessageType.REVERSAL);
+            return new MessageEnrichmentHolder(body, MessageType.REVERSAL, date);
         } else {
             amount = parseAmount(tokens[1]).negate();   // payment so negative value
             cardInfo = parseCardInfo(tokens[2]);
             originator = tokens[3];
-            date = tokens[4];
+//            date = tokens[4];
 
             // remove last dot
-            if (date.contains(".")) {
-                date = date.substring(0, date.length() - 1);
-            }
+//            if (date.contains(".")) {
+//                date = date.substring(0, date.length() - 1);
+//            }
 
-            return new MessageEnrichmentHolder(MessageType.REVERSAL, cardInfo, amount, originator, date);
+            return new MessageEnrichmentHolder(body, MessageType.REVERSAL, cardInfo, amount, originator, date);
         }
     }
 
-    private static MessageEnrichmentHolder parseOTP(String body) {
-        return new MessageEnrichmentHolder(MessageType.OTP);
+    private static MessageEnrichmentHolder parseOTP(String body, String date) {
+        return new MessageEnrichmentHolder(body, MessageType.OTP, "N/A", new CurrencyAmount("SGD", 0), "Citibank", date);
     }
 }

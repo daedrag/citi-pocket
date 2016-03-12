@@ -52,8 +52,10 @@ public class MonthYear {
     }
 
     public MonthYear getPrevious() {
-        // Find this month text
+        // Set calendar to current month year
         Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MONTH, month.getValue() - 1); // In our Month, Jan is 1
+        calendar.set(Calendar.YEAR, year);
 
         // Calculate previous month
         calendar.add(Calendar.MONTH, -1);
@@ -64,8 +66,10 @@ public class MonthYear {
     }
 
     public MonthYear getNext() {
-        // Find this month text
+        // Set calendar to current month year
         Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MONTH, month.getValue() - 1); // In our Month, Jan is 1
+        calendar.set(Calendar.YEAR, year);
 
         // Calculate previous month
         calendar.add(Calendar.MONTH, 1);

@@ -2,7 +2,6 @@ package com.d3.duy.citipocket.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -86,15 +85,16 @@ public abstract class PermissionRequestorActivity extends AppCompatActivity {
                 this.callback.onSuccess(permissionCode);
 
             } else {
-                Snackbar.make(this.getViewForSnackbar(),
-                        "Permission denied! Please enable it to run correctly",
-                        Snackbar.LENGTH_LONG)
-                        .setAction("Enable", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                request(permissionCode, callback);
-                            }
-                        }).show();
+                Toast.makeText(this, "Permission denied! Please enable it to run correctly", Toast.LENGTH_LONG).show();
+//                Snackbar.make(this.getViewForSnackbar(),
+//                        "Permission denied! Please enable it to run correctly",
+//                        Snackbar.LENGTH_LONG)
+//                        .setAction("Enable", new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                request(permissionCode, callback);
+//                            }
+//                        }).show();
             }
         }
     }

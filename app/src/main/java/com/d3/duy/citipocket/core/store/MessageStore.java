@@ -1,4 +1,4 @@
-package com.d3.duy.citipocket.core.loader;
+package com.d3.duy.citipocket.core.store;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
@@ -6,6 +6,7 @@ import android.provider.Telephony;
 import android.util.Log;
 
 import com.d3.duy.citipocket.core.enrich.MessageEnrichment;
+import com.d3.duy.citipocket.core.enrich.TransactionDuplicateRemover;
 import com.d3.duy.citipocket.model.MessageContract;
 import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
 import com.d3.duy.citipocket.model.MessageHolder;
@@ -16,14 +17,14 @@ import java.util.List;
 /**
  * Created by daoducduy0511 on 3/4/16.
  */
-public class MessageLoader {
-    private static final String TAG = MessageLoader.class.getSimpleName();
+public class MessageStore {
+    private static final String TAG = MessageStore.class.getSimpleName();
 
     public static final int BATCH_SIZE = 50;
     public static final int BATCH_WINDOW_SIZE = 2;
     public static final int TOTAL_ITEM_IN_WINDOW_SIZE = BATCH_WINDOW_SIZE * BATCH_SIZE;
 
-    private static MessageLoader ourInstance = null;
+    private static MessageStore ourInstance = null;
     private static ContentResolver ourContentResolver = null;
 
     private List<MessageHolder> messageHolderList = new ArrayList<>();
@@ -34,27 +35,23 @@ public class MessageLoader {
     private int currentToPosition = 0;
     private int total = 0;
 
-    private MessageLoader() { }
-    public static MessageLoader getInstance( ContentResolver contentResolver) {
+    private MessageStore() { }
+    public static MessageStore getInstance( ContentResolver contentResolver) {
         ourContentResolver = contentResolver;
-        if (ourInstance == null) ourInstance = new MessageLoader();
+        if (ourInstance == null) ourInstance = new MessageStore();
         return ourInstance;
     }
 
-    public static MessageLoader getInstance() {
+    public static MessageStore getInstance() {
         return ourInstance;
     }
 
     public List<MessageHolder> getMessages() {
-        synchronized (this) {
-            return messageHolderList;
-        }
+        return messageHolderList;
     }
 
     public List<MessageEnrichmentHolder> getEnrichedMessages() {
-        synchronized (this) {
-            return enrichedMessageHolderList;
-        }
+        return enrichedMessageHolderList;
     }
 
     public boolean isMorePrevious() {
@@ -142,13 +139,15 @@ public class MessageLoader {
     }
 
     public int getMessagesSize() {
-        synchronized (this) {
-            return total;
-        }
+        return total;
+    }
+
+    public boolean isLoaded() {
+        return isLoaded;
     }
 
     public void load(boolean forceReload) {
-        synchronized (this) {
+//        synchronized (this) {
             // prevent reload many times
             if (!forceReload && isLoaded) return;
 
@@ -195,9 +194,12 @@ public class MessageLoader {
 
             // transform all normal messages to enriched type
             for (MessageHolder message: messageHolderList) {
-                enrichedMessageHolderList.add(MessageEnrichment.classify(message));
+                MessageEnrichmentHolder enrichedMessage = MessageEnrichment.classify(message);
+
+                if (TransactionDuplicateRemover.isDuplicate(enrichedMessage)) continue;
+                else enrichedMessageHolderList.add(enrichedMessage);
             }
-        }
+//        }
     }
 
 }
