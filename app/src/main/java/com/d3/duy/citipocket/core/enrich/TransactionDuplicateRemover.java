@@ -19,4 +19,8 @@ public class TransactionDuplicateRemover {
         return enrichmentHolder.getType() == MessageType.TRANSFER;
     }
 
+    public static boolean isRedundant(MessageEnrichmentHolder enrichmentHolder) {
+        return enrichmentHolder.getType() == MessageType.OTP;
+    }
+
 }

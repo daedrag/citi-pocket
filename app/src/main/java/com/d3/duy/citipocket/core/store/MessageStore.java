@@ -196,7 +196,9 @@ public class MessageStore {
             for (MessageHolder message: messageHolderList) {
                 MessageEnrichmentHolder enrichedMessage = MessageEnrichment.classify(message);
 
-                if (TransactionDuplicateRemover.isDuplicate(enrichedMessage)) continue;
+                if (TransactionDuplicateRemover.isDuplicate(enrichedMessage) ||
+                        TransactionDuplicateRemover.isRedundant(enrichedMessage)) continue;
+
                 else enrichedMessageHolderList.add(enrichedMessage);
             }
 //        }
