@@ -23,6 +23,13 @@ public class MonthYear {
         return month.name() + " " + year;
     }
 
+    public String toShortString() {
+        //int monthInt = month.getValue() + 1;
+        String monthStr = month.name(); //(monthInt < 10 ? "0" + monthInt : "" + monthInt);
+        String yearStr = "" + (year % 100);
+        return monthStr + "/" + yearStr;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

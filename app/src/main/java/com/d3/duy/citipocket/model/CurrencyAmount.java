@@ -8,6 +8,8 @@ import java.text.DecimalFormat;
 public class CurrencyAmount {
     private static final DecimalFormat DECIMAL_FORMAT_ACCOUNTING_STYLE = new DecimalFormat("#,###");
 
+    public static final String BASE_CURRENCY_CODE = "SGD";
+
     private String currencyCode;
     private double amount;
 

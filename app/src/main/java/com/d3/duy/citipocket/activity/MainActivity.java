@@ -18,6 +18,7 @@ import com.d3.duy.citipocket.adapter.SectionsPagerAdapter;
 import com.d3.duy.citipocket.core.store.MessageStore;
 import com.d3.duy.citipocket.core.store.StatisticsStore;
 import com.d3.duy.citipocket.fragment.FragmentAccount;
+import com.d3.duy.citipocket.fragment.FragmentGraph;
 import com.d3.duy.citipocket.fragment.FragmentMessages;
 import com.d3.duy.citipocket.model.MessageEnrichmentHolder;
 
@@ -46,7 +47,7 @@ public class MainActivity extends PermissionRequestorActivity {
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    private ViewPager mViewPager;
+    private CustomViewPager mViewPager;
 
     private Toolbar toolbar;
 
@@ -63,9 +64,15 @@ public class MainActivity extends PermissionRequestorActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (CustomViewPager) findViewById(R.id.container);
+
+        // prevent swipe to avoid unwanted navigation
+        mViewPager.setPagingEnabled(false);
+
+        // prevent reload page, force cache all tabs
         mViewPager.setOffscreenPageLimit(3);
 
+        // assign adapter (uninitialized)
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -139,7 +146,7 @@ public class MainActivity extends PermissionRequestorActivity {
         protected Void doInBackground(Void... params) {
             // 1. classify by date
             // 2. for each group, classify by type
-            // 3. aggregate all messages with the same type
+            // 3. aggregateMessages all messages with the same type
             StatisticsStore.getInstance().load();
 
             // UGLY CODE: set adapter to Fragment Account
@@ -153,6 +160,9 @@ public class MainActivity extends PermissionRequestorActivity {
 
                     FragmentMessages fragmentMessages = (FragmentMessages) mSectionsPagerAdapter.getMessagesFragment();
                     fragmentMessages.initAdapter();
+
+                    FragmentGraph fragmentGraph = (FragmentGraph) mSectionsPagerAdapter.getGraphFragment();
+                    fragmentGraph.initAdapter(getApplicationContext());
                 }
             });
 

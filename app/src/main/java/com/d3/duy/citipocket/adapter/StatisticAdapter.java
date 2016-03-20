@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.d3.duy.citipocket.R;
-import com.d3.duy.citipocket.core.enrich.CurrencyEnrichment;
 import com.d3.duy.citipocket.core.store.MessageTypeIconStore;
 import com.d3.duy.citipocket.core.store.StatisticsStore;
 import com.d3.duy.citipocket.model.CurrencyAmount;
@@ -123,7 +122,7 @@ public class StatisticAdapter extends BaseAdapter {
             totalBalance += subStat.getTotalAmount().getAmount();
         }
 
-        return new CurrencyAmount(CurrencyEnrichment.BASE_CURRENCY_CODE, totalBalance);
+        return new CurrencyAmount(CurrencyAmount.BASE_CURRENCY_CODE, totalBalance);
     }
 
     public void reloadData() {

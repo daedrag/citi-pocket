@@ -19,7 +19,7 @@ public class MonthlyStatistics {
 
         public SubtypeStatistics(MessageType type, List<MessageEnrichmentHolder> messages) {
             this.messages = messages;
-            this.totalAmount = AmountAggregator.aggregate(this.messages);
+            this.totalAmount = AmountAggregator.aggregateMessages(this.messages);
             this.type = type;
         }
 
@@ -32,32 +32,51 @@ public class MonthlyStatistics {
         public MessageType getType() { return type; }
     }
 
-    private Month month;
-    private int year;
+    private MonthYear monthYear;
     private List<SubtypeStatistics> subStatList;
+    private CurrencyAmount totalSpending;
+
+    public MonthlyStatistics(MonthYear monthYear, List<SubtypeStatistics> subStatList) {
+        this.monthYear = monthYear;
+        this.subStatList = subStatList;
+
+        List<CurrencyAmount> spendingPerType = new ArrayList<>();
+        for (SubtypeStatistics subStat: subStatList) {
+            spendingPerType.add(subStat.getTotalAmount());
+        }
+
+        this.totalSpending = AmountAggregator.aggregateAmounts(spendingPerType);
+    }
 
     public MonthlyStatistics(Month month, int year, List<SubtypeStatistics> subStatList) {
-        this.month = month;
-        this.year = year;
-        this.subStatList = subStatList;
+        this(new MonthYear(month, year), subStatList);
+    }
+
+    public MonthlyStatistics(MonthYear monthYear) {
+        this(monthYear, new ArrayList<SubtypeStatistics>());
     }
 
     public MonthlyStatistics(Month month, int year) {
-        this.month = month;
-        this.year = year;
-        this.subStatList = new ArrayList<>();
+        this(month, year, new ArrayList<SubtypeStatistics>());
+    }
+
+    public MonthYear getMonthYear() {
+        return monthYear;
     }
 
     public Month getMonth() {
-        return month;
+        return monthYear.getMonth();
     }
 
     public int getYear() {
-        return year;
+        return monthYear.getYear();
     }
 
     public List<SubtypeStatistics> getSubStatList() {
         return subStatList;
     }
 
+    public CurrencyAmount getTotalSpending() {
+        return totalSpending;
+    }
 }

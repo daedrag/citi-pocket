@@ -20,12 +20,13 @@ import com.d3.duy.citipocket.model.MessageContract;
 public class FragmentMessages extends Fragment implements CustomFragment {
 
     private static final String TITLE = "Messages";
-    private MessagesListAdapter messagesListAdapter = null;
+    private MessagesListAdapter messagesListAdapter;
     private ListView listView;
     private TextView textView;
 
     public FragmentMessages() {
         super();
+        messagesListAdapter = null;
     }
 
     @Override
@@ -92,15 +93,6 @@ public class FragmentMessages extends Fragment implements CustomFragment {
                 this.isMoving = true;
             }
         });
-
-        // Setup spinner
-//        Spinner spinner = (Spinner) rootView.findViewById(R.id.spinner_messages);
-//
-//        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
-//                R.array.filter_options, R.layout.spinner_options_item);
-//
-//        adapter.setDropDownViewResource(R.layout.spinner_options_dropdown_item);
-//        spinner.setAdapter(adapter);
 
         return rootView;
     }

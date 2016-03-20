@@ -44,7 +44,7 @@ public class StatisticsStore {
 
         // 1. classify by month
         // 2. for each group, classify by type
-        // 3. aggregate all messages with the same type
+        // 3. aggregateMessages all messages with the same type
         messages = MessageStore.getInstance().getEnrichedMessages();
 
         IMessageGroup<MonthYear> groupByMonth = new MessageGroupByMonth(messages);
@@ -65,7 +65,7 @@ public class StatisticsStore {
             IMessageGroup groupByType = new MessageGroupByType(messagesPerMonth);
             Map<MessageType, List<MessageEnrichmentHolder>> typeMap = groupByType.groupBy();
 
-            // aggregate per type
+            // aggregateMessages per type
             for (Map.Entry<MessageType, List<MessageEnrichmentHolder>> typeMapEntry : typeMap.entrySet()) {
                 // add to sub stats
                 subStatList.add(new SubtypeStatistics(typeMapEntry.getKey(), typeMapEntry.getValue()));

@@ -7,11 +7,9 @@ import com.d3.duy.citipocket.model.CurrencyAmount;
  */
 public class CurrencyEnrichment {
 
-    public static final String BASE_CURRENCY_CODE = "SGD";
-
     public static CurrencyAmount fromCurrencyAmountString(String s) {
         // default case
-        String ccyCode = BASE_CURRENCY_CODE;
+        String ccyCode = CurrencyAmount.BASE_CURRENCY_CODE;
         double amount = 0.0;
         
         // assume the first 3 chars contain currency code

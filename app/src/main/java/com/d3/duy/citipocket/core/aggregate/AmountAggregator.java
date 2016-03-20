@@ -11,15 +11,30 @@ import java.util.List;
  */
 public class AmountAggregator {
 
-    public static CurrencyAmount aggregate(List<MessageEnrichmentHolder> messages) {
+    public static CurrencyAmount aggregateMessages(List<MessageEnrichmentHolder> messages) {
         double totalAmount = 0;
-        String baseCcy = "SGD";
+        String baseCcy = CurrencyAmount.BASE_CURRENCY_CODE; // SGD
 
         for (MessageEnrichmentHolder message : messages) {
             if (baseCcy.equals(message.getAmount().getCurrencyCode())) {
                 totalAmount += message.getAmount().getAmount();
             } else {
                 totalAmount += CurrencyEnrichment.convertToSgd(message.getAmount()).getAmount();
+            }
+        }
+
+        return new CurrencyAmount(baseCcy, totalAmount);
+    }
+
+    public static CurrencyAmount aggregateAmounts(List<CurrencyAmount> amounts) {
+        double totalAmount = 0;
+        String baseCcy = CurrencyAmount.BASE_CURRENCY_CODE; // SGD
+
+        for (CurrencyAmount amount : amounts) {
+            if (baseCcy.equals(amount.getCurrencyCode())) {
+                totalAmount += amount.getAmount();
+            } else {
+                totalAmount += CurrencyEnrichment.convertToSgd(amount).getAmount();
             }
         }
 

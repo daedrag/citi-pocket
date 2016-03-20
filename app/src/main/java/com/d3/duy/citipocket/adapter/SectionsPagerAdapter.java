@@ -13,33 +13,38 @@ import com.d3.duy.citipocket.fragment.FragmentAccount;
 import com.d3.duy.citipocket.fragment.FragmentGraph;
 import com.d3.duy.citipocket.fragment.FragmentMessages;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
  * one of the sections/tabs/pages.
  */
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-    private static final Fragment accountFragment = new FragmentAccount();
-    private static final Fragment graphFragment = new FragmentGraph();
-    private static final Fragment messagesFragment = new FragmentMessages();
-    private static Fragment[] fragments = {
-            accountFragment,
-            graphFragment,
-            messagesFragment
-    };
+    private final List<Fragment> fragments;
 
     public SectionsPagerAdapter(FragmentManager fm) {
         super(fm);
+
+        final Fragment accountFragment = new FragmentAccount();
+        final Fragment graphFragment = new FragmentGraph();
+        final Fragment messagesFragment = new FragmentMessages();
+
+        fragments = new ArrayList<>();
+        fragments.add(0, accountFragment);
+        fragments.add(1, graphFragment);
+        fragments.add(2, messagesFragment);
     }
 
     @Override
     public Fragment getItem(int position) {
-        return fragments[position];
+        return fragments.get(position);
     }
 
     @Override
     public int getCount() {
-        return fragments.length;
+        return fragments.size();
     }
 
     @Override
@@ -47,13 +52,14 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         return ((CustomFragment)getItem(position)).getTitle();
     }
 
-    public Fragment getAccountFragment() { return accountFragment; }
+    public Fragment getAccountFragment() { return fragments.get(0); }
 
     public Fragment getGraphFragment() {
-        return graphFragment;
+        return fragments.get(1);
     }
 
     public Fragment getMessagesFragment() {
-        return messagesFragment;
+        return fragments.get(2);
     }
+
 }

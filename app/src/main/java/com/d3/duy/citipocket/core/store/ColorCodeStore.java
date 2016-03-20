@@ -1,5 +1,7 @@
 package com.d3.duy.citipocket.core.store;
 
+import android.content.Context;
+
 import com.d3.duy.citipocket.R;
 import com.d3.duy.citipocket.model.enums.MessageType;
 
@@ -35,5 +37,13 @@ public class ColorCodeStore {
 
     public static Map<MessageType, Integer> getColorCodeMap() {
         return colorMap;
+    }
+
+    public static Map<MessageType, Integer> getColorMap(Context context) {
+        Map<MessageType, Integer> anotherColorMap = new HashMap<>();
+        for (Map.Entry<MessageType, Integer> entry : colorMap.entrySet()) {
+            anotherColorMap.put(entry.getKey(), context.getResources().getColor(entry.getValue()));
+        }
+        return  anotherColorMap;
     }
 }
